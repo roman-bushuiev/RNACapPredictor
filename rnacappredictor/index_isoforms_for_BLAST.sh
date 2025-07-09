@@ -1,6 +1,6 @@
 #! /bin/bash
 
-export isoforms_dir="data/isoforms/FM183"
+# export isoforms_dir="data/isoforms/FM200"
 
 if [ -z "$isoforms_dir" ]; then
     echo "Error: isoforms_dir environment variable is not set"

@@ -9,11 +9,15 @@
 # export data_folder="data/FM165/no_sample_id/20241120_1928_MN43023_FAY46018_68f388f5/fastq_pass"
 # export data_folder="data/FM183/no_sample_id/20250306_1601_MN43023_FBC12602_17f7d59a/fastq_pass"
 # export data_folder="data/FM183_combined_bps"
-export data_folder="data/FM185/no_sample_id/20250324_1822_MD-101425_FBC23952_d258aa5b/fastq_pass"
+# export data_folder="data/FM185/no_sample_id/20250324_1822_MD-101425_FBC23952_d258aa5b/fastq_pass"
+# export data_folder="data/FM200/no_sample_id/20250609_1143_MD-101425_FBC21923_a6c9a0a2/fastq_pass"
 
-export isoforms_dir="data/isoforms/FM183/individual_isoforms"
-export isoform_database="data/isoforms/FM183/isoform_database/isoform_database"
-export bowtie2_isoforms_folder="data/isoforms/FM183/bowtie2_index"
+export data_folder="data/FM200/no_sample_id/20250609_1143_MD-101425_FBC21923_a6c9a0a2/fastq_pass/U6"
+export isoforms_name="U6"
+
+export isoforms_dir="data/isoforms/$isoforms_name/individual_isoforms"
+export isoform_database="data/isoforms/$isoforms_name/isoform_database/isoform_database"
+export bowtie2_isoforms_folder="data/isoforms/$isoforms_name/bowtie2_index"
 
 echo "Running 1_concat_raw_fastq_folders_into_fastas.sh"
 ./rnacappredictor/1_concat_raw_fastq_folders_into_fastas.sh || { echo "1_concat_raw_fastq_folders_into_fastas.sh failed"; exit 1; }
