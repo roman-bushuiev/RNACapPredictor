@@ -12,8 +12,8 @@
 # export data_folder="data/FM185/no_sample_id/20250324_1822_MD-101425_FBC23952_d258aa5b/fastq_pass"
 # export data_folder="data/FM200/no_sample_id/20250609_1143_MD-101425_FBC21923_a6c9a0a2/fastq_pass"
 
-export data_folder="data/FM200/no_sample_id/20250609_1143_MD-101425_FBC21923_a6c9a0a2/fastq_pass/U6"
-export isoforms_name="U6"
+export data_folder="data/FM205BIS/no_sample_id/20250705_1815_MD-101425_FBC20638_41e6243c/fastq_pass/U1-148P"
+export isoforms_name="U1-148P"
 
 export isoforms_dir="data/isoforms/$isoforms_name/individual_isoforms"
 export isoform_database="data/isoforms/$isoforms_name/isoform_database/isoform_database"

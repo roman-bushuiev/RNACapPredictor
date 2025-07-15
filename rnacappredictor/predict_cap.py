@@ -1,6 +1,8 @@
 import numpy as np
 import pandas as pd
 from sklearn.neighbors import KNeighborsClassifier
+from itertools import product
+from tqdm import tqdm
 
 
 # Function to create feature vector for each sample
@@ -102,6 +104,80 @@ def predict_cap(df_train, df_test, show_true_cap=False, include_insdel=False, pr
     # Create DataFrame from results
     results_df = pd.DataFrame(results)
     return results_df
+
+
+def mix_fingerprints(
+        df: pd.DataFrame, 
+        cap_frac_dict: dict,
+        include_insdel: bool = False,
+    ):
+
+    if include_insdel:
+        nuc_cols = ['num_A', 'num_C', 'num_G', 'num_T', 'num_INS', 'num_DEL']
+        pct_cols = ['A%_INSDEL', 'C%_INSDEL', 'G%_INSDEL', 'T%_INSDEL', 'INS%_INSDEL', 'DEL%_INSDEL']
+    else:
+        nuc_cols = ['num_A', 'num_C', 'num_G', 'num_T']
+        pct_cols = ['A%', 'C%', 'G%', 'T%']
+
+    if len(df) != 5 * len(cap_frac_dict.keys()):
+        raise ValueError("df must have 5 * len(cap_frac_dict.keys()) rows")
+    if not set(cap_frac_dict.keys()).issubset(set(df['cap'].unique())):
+        raise ValueError("frac_dict keys must be a subset of cap types in df")
+    if not np.isclose(sum(cap_frac_dict.values()), 1):
+        raise ValueError("fractions must sum to 1")
+    
+    res_df = []
+    for rt in df['RT'].unique():
+        rt_df = df[df['RT'] == rt]
+
+        # Convert df to dict
+        rt_dict = rt_df.set_index('cap')[nuc_cols].to_dict('index')
+        
+        # Compute weighted averages
+        weighted_counts = {nuc: sum(rt_dict[cap][nuc] * cap_frac_dict[cap] 
+                                  for cap in cap_frac_dict)
+                         for nuc in nuc_cols}
+        weighted_counts['RT'] = rt
+        res_df.append(weighted_counts)
+
+    df_result = pd.DataFrame(res_df)
+
+    # Normalize counts to percentages
+    total = df_result[nuc_cols].sum(axis=1)
+    df_result[pct_cols] = df_result[nuc_cols].div(total, axis=0)
+    df_result = df_result.drop(columns=nuc_cols)
+
+    # Save cap_frac_dict info to the result
+    df_result['cap'] = ' + '.join(f'{cap} ({frac:.1%})' for cap, frac in cap_frac_dict.items())
+    df_result['experiment'] = ' + '.join(df['experiment'].unique())
+    return df_result
+
+
+def generate_fingerprint_mixes(df_train, step_size=0.02, include_insdel=False):
+
+    def generate_combinations(step_size=0.02):
+        values = np.arange(0, 1 + step_size, step_size)
+        for nad, ap4a, m7g in product(values, values, values):
+            tmg = 1 - nad - ap4a - m7g
+            if 0 <= tmg <= 1:  # Only keep combinations where TMG fraction is valid
+                yield float(nad), float(ap4a), float(m7g), float(tmg)
+
+    # Calculate total number of combinations
+    total = sum(1 for _ in generate_combinations())
+
+    df_train_mixes = pd.concat([
+        mix_fingerprints(df_train, {
+            'NAD-U1': nad,
+            'Ap₄A-U1': ap4a,
+            'm⁷Gp₃A-U1': m7g,
+            'TMG-U1': tmg
+        },
+        include_insdel=include_insdel
+        )
+        for nad, ap4a, m7g, tmg in tqdm(generate_combinations(), total=total, desc='Generating combinations')
+    ])
+
+    return df_train_mixes
 
 
 def main():
