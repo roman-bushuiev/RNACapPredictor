@@ -26,7 +26,7 @@ df_train = pd.read_csv('../data/FM179-FM181_fingerprints.csv')
 df_res = predict_cap(df_train, df_test, show_true_cap=True)
 ```
 
-Here, `df_test` object is a pandas dataframe containing fingerprints computed in the previous step. For detailed examples, refer to the `notebooks` folder.
+Here, `df_test` object is a pandas dataframe containing fingerprints computed in the previous step. Please note that the algorithm can process multiple experiments and expects combinations of reverse transcriptases (RTs) for each experiment. Therefore, `df_test` should additionally contain `experiment` and `RT` columns. For detailed examples, refer to the `notebooks` folder.
 
 ## 3. Deconvolution
 
