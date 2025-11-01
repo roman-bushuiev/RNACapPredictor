@@ -1,5 +1,7 @@
 # RNACapPredictor
 
+The code includes scripts developed by Nikolas Tolar.
+
 ## 1. Computing RNA cap fingerprints for new datasets
 
 1. Place the `FM{XYZ}` folder containing the new sequencing data into the `data` directory. This folder should include a subdirectory with sequences for individual barcodes. For example:  
@@ -28,20 +30,20 @@ df_res = predict_cap(df_train, df_test, show_true_cap=True)
 
 Here, `df_test` object is a pandas dataframe containing fingerprints computed in the previous step. Please note that the algorithm can process multiple experiments and expects combinations of reverse transcriptases (RTs) for each experiment. Therefore, `df_test` should additionally contain `experiment` and `RT` columns. For detailed examples, refer to the `notebooks` folder.
 
-## 3. Deconvolution
+<!-- ## 3. Deconvolution
 
-TBD
+TBD -->
 
 ## A. Preparing new isoform databases
 
-TBD
+To prepare a new isoform or a set of isoforms for processing one needs to:
+1. Create a new folder in `data/isoforms/{isoform_name}/individual_isoforms`. In this folder create a file `isoform_{isoform_name}.fasta` containing a list of isoforms (see for example [U1-11](https://github.com/roman-bushuiev/RNACapPredictor/blob/master/data/isoforms/U1-11/individual_isoforms/isoform_U1-11.fasta) file).
+2. Run `/storage/brno2/home/romanb/RNA/RNACapPredictor/rnacappredictor/main_isoforms_preprocessing.sh` with `isoforms_dir=data/isoforms/{isoform_name}`.
 
-## B. Working with isoform mixes vs. single isoforms
+<!-- ## B. Working with isoform mixes vs. single isoforms
 
 TBD
 
 ## C. Details on the individual steps of the `rnacappredictor/main.sh` script
 
-TBD
-
-The code for this script was developed by Nikolas Tolar.
+TBD -->
