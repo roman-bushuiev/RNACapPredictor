@@ -1,3 +1,5 @@
+import pickle
+
 import numpy as np
 import pandas as pd
 from sklearn.neighbors import KNeighborsClassifier
@@ -59,12 +61,84 @@ def predict(X_test_sample, X_train, y_train):
     return list(zip(neighbor_labels, similarities))
 
 
-def predict_cap(df_train, df_test, show_true_cap=False, include_insdel=False, print_top_k=50):
-    # Get unique RT names from all datasets
-    all_rt_names = df_train['RT'].unique()
+def train_knn(df_train, model_path, include_insdel=False):
+    """Train the KNN model on df_train and save it to a pickle file.
 
-    # Create features and labels for each dataset
-    X_train, y_train, caps_train, experiments_train = create_features(df_train, all_rt_names, include_insdel)
+    Parameters
+    ----------
+    df_train : pd.DataFrame
+        Training fingerprint data.
+    model_path : str
+        Path where the pickle file will be saved.
+    include_insdel : bool, optional
+        Whether to include insertion/deletion features.
+    """
+    all_rt_names = df_train['RT'].unique()
+    X_train, y_train, _, _ = create_features(df_train, all_rt_names, include_insdel)
+    model = {
+        'X_train': X_train,
+        'y_train': y_train,
+        'all_rt_names': all_rt_names,
+        'include_insdel': include_insdel,
+    }
+    with open(model_path, 'wb') as f:
+        pickle.dump(model, f)
+
+
+def predict_cap(df_test, df_train=None, model_path=None, show_true_cap=False, include_insdel=False, print_top_k=50):
+    """Predict cap types for the samples in df_test.
+
+    Either ``model_path`` (path to a pickle produced by :func:`train_knn`) or
+    ``df_train`` must be provided.  When ``model_path`` is given it takes
+    precedence over ``df_train``.
+
+    Parameters
+    ----------
+    df_test : pd.DataFrame
+        Test fingerprint data.
+    df_train : pd.DataFrame, optional
+        Training fingerprint data.  Used when ``model_path`` is not provided.
+    model_path : str, optional
+        Path to a pickle file produced by :func:`train_knn`.
+    show_true_cap : bool, optional
+        Whether to print the true cap label.
+    include_insdel : bool, optional
+        Whether to include insertion/deletion features.
+    print_top_k : int, optional
+        Number of top predictions to print and include in the results.
+
+    Returns
+    -------
+    pd.DataFrame
+        DataFrame with prediction results.
+    """
+    if model_path is not None:
+        with open(model_path, 'rb') as f:
+            model = pickle.load(f)
+        required_keys = {'X_train', 'y_train', 'all_rt_names', 'include_insdel'}
+        missing = required_keys - set(model.keys())
+        if missing:
+            raise ValueError(
+                f"Pickle file '{model_path}' is missing expected keys: {missing}. "
+                "Make sure the file was created with train_knn()."
+            )
+        if model['include_insdel'] != include_insdel:
+            raise ValueError(
+                f"include_insdel mismatch: model was trained with include_insdel="
+                f"{model['include_insdel']} but predict_cap was called with "
+                f"include_insdel={include_insdel}."
+            )
+        X_train = model['X_train']
+        y_train = model['y_train']
+        all_rt_names = model['all_rt_names']
+    elif df_train is not None:
+        # Get unique RT names from all datasets
+        all_rt_names = df_train['RT'].unique()
+        # Create features and labels for the training dataset
+        X_train, y_train, _, _ = create_features(df_train, all_rt_names, include_insdel)
+    else:
+        raise ValueError("Either 'model_path' or 'df_train' must be provided.")
+
     X_test, y_test, caps_test, experiments_test = create_features(df_test, all_rt_names, include_insdel)
 
     # Make predictions
